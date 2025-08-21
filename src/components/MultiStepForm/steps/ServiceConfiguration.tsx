@@ -6,9 +6,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import { useFormContext } from '../FormContext';
 import { SERVICE_NAMES } from '../constants';
 import { ServiceType } from '../types';
+import { Upload, FileText, Video, Image } from 'lucide-react';
 
 export const ServiceConfiguration: React.FC = () => {
   const { formData, updateFormData } = useFormContext();
@@ -22,6 +24,28 @@ export const ServiceConfiguration: React.FC = () => {
           ...config
         }
       }
+    });
+  };
+
+  const handleFileUpload = (serviceId: ServiceType, fileType: string, files: FileList | null) => {
+    if (!files) return;
+    
+    const fileArray = Array.from(files);
+    const config = getServiceConfig(serviceId);
+    
+    updateServiceConfig(serviceId, {
+      ...config,
+      [fileType]: [...(config[fileType] || []), ...fileArray]
+    });
+  };
+
+  const removeFile = (serviceId: ServiceType, fileType: string, index: number) => {
+    const config = getServiceConfig(serviceId);
+    const updatedFiles = (config[fileType] || []).filter((_: any, i: number) => i !== index);
+    
+    updateServiceConfig(serviceId, {
+      ...config,
+      [fileType]: updatedFiles
     });
   };
 
@@ -69,6 +93,9 @@ export const ServiceConfiguration: React.FC = () => {
               <MotionGraphicsConfig 
                 config={getServiceConfig(serviceId)}
                 updateConfig={(config) => updateServiceConfig(serviceId, config)}
+                serviceId={serviceId}
+                onFileUpload={(fileType, files) => handleFileUpload(serviceId, fileType, files)}
+                onRemoveFile={(fileType, index) => removeFile(serviceId, fileType, index)}
               />
             )}
 
@@ -77,6 +104,9 @@ export const ServiceConfiguration: React.FC = () => {
               <UGCVideoConfig 
                 config={getServiceConfig(serviceId)}
                 updateConfig={(config) => updateServiceConfig(serviceId, config)}
+                serviceId={serviceId}
+                onFileUpload={(fileType, files) => handleFileUpload(serviceId, fileType, files)}
+                onRemoveFile={(fileType, index) => removeFile(serviceId, fileType, index)}
               />
             )}
 
@@ -85,6 +115,9 @@ export const ServiceConfiguration: React.FC = () => {
               <StaticGraphicConfig 
                 config={getServiceConfig(serviceId)}
                 updateConfig={(config) => updateServiceConfig(serviceId, config)}
+                serviceId={serviceId}
+                onFileUpload={(fileType, files) => handleFileUpload(serviceId, fileType, files)}
+                onRemoveFile={(fileType, index) => removeFile(serviceId, fileType, index)}
               />
             )}
 
@@ -93,6 +126,9 @@ export const ServiceConfiguration: React.FC = () => {
               <VoiceoverConfig 
                 config={getServiceConfig(serviceId)}
                 updateConfig={(config) => updateServiceConfig(serviceId, config)}
+                serviceId={serviceId}
+                onFileUpload={(fileType, files) => handleFileUpload(serviceId, fileType, files)}
+                onRemoveFile={(fileType, index) => removeFile(serviceId, fileType, index)}
               />
             )}
 
@@ -101,6 +137,9 @@ export const ServiceConfiguration: React.FC = () => {
               <ScriptWritingConfig 
                 config={getServiceConfig(serviceId)}
                 updateConfig={(config) => updateServiceConfig(serviceId, config)}
+                serviceId={serviceId}
+                onFileUpload={(fileType, files) => handleFileUpload(serviceId, fileType, files)}
+                onRemoveFile={(fileType, index) => removeFile(serviceId, fileType, index)}
               />
             )}
           </CardContent>
@@ -114,8 +153,11 @@ export const ServiceConfiguration: React.FC = () => {
 const MotionGraphicsConfig: React.FC<{
   config: any;
   updateConfig: (config: any) => void;
-}> = ({ config, updateConfig }) => (
-  <div className="space-y-4">
+  serviceId: ServiceType;
+  onFileUpload: (fileType: string, files: FileList | null) => void;
+  onRemoveFile: (fileType: string, index: number) => void;
+}> = ({ config, updateConfig, serviceId, onFileUpload, onRemoveFile }) => (
+  <div className="space-y-6">
     <div className="space-y-3">
       <Label className="text-sm font-medium">Script Requirements</Label>
       <div className="space-y-2">
@@ -131,17 +173,55 @@ const MotionGraphicsConfig: React.FC<{
         </div>
         
         {!config.needsScript && (
-          <div className="ml-6">
-            <Label htmlFor="script-upload" className="text-sm text-muted-foreground">
-              Upload or paste your script:
+          <div className="ml-6 space-y-3">
+            <Label className="text-sm text-muted-foreground">
+              Provide your script:
             </Label>
             <Textarea 
-              id="script-upload"
-              placeholder="Paste your script here or upload a file..."
-              className="mt-1"
+              placeholder="Paste your script here..."
+              className="min-h-[100px]"
               value={config.providedScript || ''}
               onChange={(e) => updateConfig({ providedScript: e.target.value })}
             />
+            
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Or upload script file:</Label>
+              <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  onChange={(e) => onFileUpload('scriptFiles', e.target.files)}
+                  className="hidden"
+                  id={`script-upload-${serviceId}`}
+                />
+                <Label htmlFor={`script-upload-${serviceId}`} className="cursor-pointer">
+                  <FileText className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm">Upload script file</p>
+                  <p className="text-xs text-muted-foreground">PDF, DOC, DOCX, TXT</p>
+                </Label>
+              </div>
+              
+              {config.scriptFiles && config.scriptFiles.length > 0 && (
+                <div className="space-y-2">
+                  {config.scriptFiles.map((file: File, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm">{file.name}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onRemoveFile('scriptFiles', index)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -172,14 +252,57 @@ const MotionGraphicsConfig: React.FC<{
         </Label>
       </div>
     </div>
+
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Brand Assets & References</Label>
+      <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+        <input
+          type="file"
+          multiple
+          accept=".jpg,.jpeg,.png,.gif,.pdf,.ai,.psd"
+          onChange={(e) => onFileUpload('brandAssets', e.target.files)}
+          className="hidden"
+          id={`brand-assets-${serviceId}`}
+        />
+        <Label htmlFor={`brand-assets-${serviceId}`} className="cursor-pointer">
+          <Image className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm">Upload logos, brand guidelines, references</p>
+          <p className="text-xs text-muted-foreground">JPG, PNG, PDF, AI, PSD</p>
+        </Label>
+      </div>
+      
+      {config.brandAssets && config.brandAssets.length > 0 && (
+        <div className="space-y-2">
+          {config.brandAssets.map((file: File, index: number) => (
+            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                <span className="text-sm">{file.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveFile('brandAssets', index)}
+                className="text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   </div>
 );
 
 const UGCVideoConfig: React.FC<{
   config: any;
   updateConfig: (config: any) => void;
-}> = ({ config, updateConfig }) => (
-  <div className="space-y-4">
+  serviceId: ServiceType;
+  onFileUpload: (fileType: string, files: FileList | null) => void;
+  onRemoveFile: (fileType: string, index: number) => void;
+}> = ({ config, updateConfig, serviceId, onFileUpload, onRemoveFile }) => (
+  <div className="space-y-6">
     <div className="space-y-3">
       <Label className="text-sm font-medium">Video Duration</Label>
       <RadioGroup 
@@ -216,6 +339,18 @@ const UGCVideoConfig: React.FC<{
           Write me a script (+₦2,000 per 15s block)
         </Label>
       </div>
+      
+      {!config.needsScript && (
+        <div className="ml-6 space-y-3">
+          <Label className="text-sm text-muted-foreground">Or provide your script:</Label>
+          <Textarea 
+            placeholder="Paste your UGC script here..."
+            className="min-h-[80px]"
+            value={config.providedScript || ''}
+            onChange={(e) => updateConfig({ providedScript: e.target.value })}
+          />
+        </div>
+      )}
     </div>
 
     <div className="space-y-3">
@@ -230,14 +365,70 @@ const UGCVideoConfig: React.FC<{
         </Label>
       </div>
     </div>
+
+    <div className="space-y-3">
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="overlay-animation"
+          checked={config.overlayAnimation || false}
+          onCheckedChange={(checked) => updateConfig({ overlayAnimation: checked })}
+        />
+        <Label htmlFor="overlay-animation" className="text-sm">
+          Add branded animation overlay (+₦5,000)
+        </Label>
+      </div>
+    </div>
+
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Reference Videos & Brand Assets</Label>
+      <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+        <input
+          type="file"
+          multiple
+          accept=".mp4,.mov,.avi,.jpg,.jpeg,.png,.pdf"
+          onChange={(e) => onFileUpload('referenceFiles', e.target.files)}
+          className="hidden"
+          id={`reference-files-${serviceId}`}
+        />
+        <Label htmlFor={`reference-files-${serviceId}`} className="cursor-pointer">
+          <Video className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm">Upload reference videos, logos, brand assets</p>
+          <p className="text-xs text-muted-foreground">MP4, MOV, JPG, PNG, PDF</p>
+        </Label>
+      </div>
+      
+      {config.referenceFiles && config.referenceFiles.length > 0 && (
+        <div className="space-y-2">
+          {config.referenceFiles.map((file: File, index: number) => (
+            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                <span className="text-sm">{file.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveFile('referenceFiles', index)}
+                className="text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   </div>
 );
 
 const StaticGraphicConfig: React.FC<{
   config: any;
   updateConfig: (config: any) => void;
-}> = ({ config, updateConfig }) => (
-  <div className="space-y-4">
+  serviceId: ServiceType;
+  onFileUpload: (fileType: string, files: FileList | null) => void;
+  onRemoveFile: (fileType: string, index: number) => void;
+}> = ({ config, updateConfig, serviceId, onFileUpload, onRemoveFile }) => (
+  <div className="space-y-6">
     <div className="space-y-3">
       <Label className="text-sm font-medium">Format</Label>
       <Select 
@@ -276,14 +467,70 @@ const StaticGraphicConfig: React.FC<{
         onChange={(e) => updateConfig({ extraVariations: parseInt(e.target.value) || 0 })}
       />
     </div>
+
+    <div className="space-y-3">
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="animate-graphic"
+          checked={config.animateGraphic || false}
+          onCheckedChange={(checked) => updateConfig({ animateGraphic: checked })}
+        />
+        <Label htmlFor="animate-graphic" className="text-sm">
+          Add simple animation (+₦5,000)
+        </Label>
+      </div>
+    </div>
+
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Brand Assets & References</Label>
+      <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+        <input
+          type="file"
+          multiple
+          accept=".jpg,.jpeg,.png,.gif,.pdf,.ai,.psd"
+          onChange={(e) => onFileUpload('designAssets', e.target.files)}
+          className="hidden"
+          id={`design-assets-${serviceId}`}
+        />
+        <Label htmlFor={`design-assets-${serviceId}`} className="cursor-pointer">
+          <Image className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm">Upload logos, brand guidelines, reference images</p>
+          <p className="text-xs text-muted-foreground">JPG, PNG, PDF, AI, PSD</p>
+        </Label>
+      </div>
+      
+      {config.designAssets && config.designAssets.length > 0 && (
+        <div className="space-y-2">
+          {config.designAssets.map((file: File, index: number) => (
+            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <Image className="h-4 w-4" />
+                <span className="text-sm">{file.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveFile('designAssets', index)}
+                className="text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   </div>
 );
 
 const VoiceoverConfig: React.FC<{
   config: any;
   updateConfig: (config: any) => void;
-}> = ({ config, updateConfig }) => (
-  <div className="space-y-4">
+  serviceId: ServiceType;
+  onFileUpload: (fileType: string, files: FileList | null) => void;
+  onRemoveFile: (fileType: string, index: number) => void;
+}> = ({ config, updateConfig, serviceId, onFileUpload, onRemoveFile }) => (
+  <div className="space-y-6">
     <div className="space-y-3">
       <Label className="text-sm font-medium">Duration</Label>
       <RadioGroup 
@@ -336,14 +583,70 @@ const VoiceoverConfig: React.FC<{
         </Label>
       </div>
     </div>
+
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Video to Voice Over</Label>
+      <p className="text-xs text-muted-foreground mb-3">
+        Upload the video that needs voiceover, or provide a script if this is audio-only.
+      </p>
+      
+      <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+        <input
+          type="file"
+          accept=".mp4,.mov,.avi"
+          onChange={(e) => onFileUpload('videoFile', e.target.files)}
+          className="hidden"
+          id={`video-upload-${serviceId}`}
+        />
+        <Label htmlFor={`video-upload-${serviceId}`} className="cursor-pointer">
+          <Video className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm">Upload video file</p>
+          <p className="text-xs text-muted-foreground">MP4, MOV, AVI</p>
+        </Label>
+      </div>
+      
+      {config.videoFile && config.videoFile.length > 0 && (
+        <div className="space-y-2">
+          {config.videoFile.map((file: File, index: number) => (
+            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                <span className="text-sm">{file.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveFile('videoFile', index)}
+                className="text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Script (if no video uploaded)</Label>
+      <Textarea 
+        placeholder="Paste the script for voiceover here..."
+        className="min-h-[100px]"
+        value={config.script || ''}
+        onChange={(e) => updateConfig({ script: e.target.value })}
+      />
+    </div>
   </div>
 );
 
 const ScriptWritingConfig: React.FC<{
   config: any;
   updateConfig: (config: any) => void;
-}> = ({ config, updateConfig }) => (
-  <div className="space-y-4">
+  serviceId: ServiceType;
+  onFileUpload: (fileType: string, files: FileList | null) => void;
+  onRemoveFile: (fileType: string, index: number) => void;
+}> = ({ config, updateConfig, serviceId, onFileUpload, onRemoveFile }) => (
+  <div className="space-y-6">
     <div className="space-y-3">
       <Label className="text-sm font-medium">Script Purpose</Label>
       <Select 
@@ -378,6 +681,50 @@ const ScriptWritingConfig: React.FC<{
         value={config.requirements || ''}
         onChange={(e) => updateConfig({ requirements: e.target.value })}
       />
+    </div>
+
+    <div className="space-y-3">
+      <Label className="text-sm font-medium">Reference Materials</Label>
+      <p className="text-xs text-muted-foreground mb-3">
+        Upload any reference materials, brand guidelines, or existing content that should inform the script.
+      </p>
+      
+      <div className="border-2 border-dashed border-muted rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+        <input
+          type="file"
+          multiple
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.mov"
+          onChange={(e) => onFileUpload('referenceFiles', e.target.files)}
+          className="hidden"
+          id={`script-reference-${serviceId}`}
+        />
+        <Label htmlFor={`script-reference-${serviceId}`} className="cursor-pointer">
+          <FileText className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm">Upload reference materials</p>
+          <p className="text-xs text-muted-foreground">PDF, DOC, JPG, PNG, MP4, MOV</p>
+        </Label>
+      </div>
+      
+      {config.referenceFiles && config.referenceFiles.length > 0 && (
+        <div className="space-y-2">
+          {config.referenceFiles.map((file: File, index: number) => (
+            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span className="text-sm">{file.name}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveFile('referenceFiles', index)}
+                className="text-destructive hover:text-destructive"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   </div>
 );

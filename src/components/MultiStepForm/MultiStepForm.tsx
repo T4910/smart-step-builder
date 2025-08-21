@@ -1,30 +1,55 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FormProvider, useFormContext } from './FormContext';
-import { FormStepper } from './FormStepper';
 import { PricingPreview } from './PricingPreview';
 import { ServiceSelection } from './steps/ServiceSelection';
 import { ServiceConfiguration } from './steps/ServiceConfiguration';
 import { AdditionalServices } from './steps/AdditionalServices';
 import { ProjectDetails } from './steps/ProjectDetails';
 import { ReviewSubmit } from './steps/ReviewSubmit';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const FormContent: React.FC = () => {
   const { currentStep, setCurrentStep, formData } = useFormContext();
 
   const steps = [
-    { component: ServiceSelection, title: 'Select Services' },
-    { component: ServiceConfiguration, title: 'Configure Services' },
-    { component: AdditionalServices, title: 'Add-ons & Upsells' },
-    { component: ProjectDetails, title: 'Project Details' },
-    { component: ReviewSubmit, title: 'Review & Submit' }
+    { 
+      component: ServiceSelection, 
+      title: 'Select Services',
+      description: 'Choose your content needs',
+      icon: '🎯'
+    },
+    { 
+      component: ServiceConfiguration, 
+      title: 'Configure Services',
+      description: 'Customize your selections',
+      icon: '⚙️'
+    },
+    { 
+      component: AdditionalServices, 
+      title: 'Add-ons & Upsells',
+      description: 'Enhance your order',
+      icon: '✨'
+    },
+    { 
+      component: ProjectDetails, 
+      title: 'Project Details',
+      description: 'Final information',
+      icon: '📋'
+    },
+    { 
+      component: ReviewSubmit, 
+      title: 'Review & Submit',
+      description: 'Confirm your order',
+      icon: '🚀'
+    }
   ];
 
-  const CurrentStepComponent = steps[currentStep].component;
-
-  const canGoNext = () => {
-    switch (currentStep) {
+  const canGoNext = (stepIndex: number) => {
+    switch (stepIndex) {
       case 0:
         return formData.selectedServices.length > 0;
       case 1:
@@ -41,19 +66,24 @@ const FormContent: React.FC = () => {
     }
   };
 
-  const canGoBack = () => {
-    return currentStep > 0;
+  const isStepCompleted = (stepIndex: number) => {
+    return currentStep > stepIndex;
   };
 
-  const handleNext = () => {
-    if (canGoNext() && currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+  const isStepActive = (stepIndex: number) => {
+    return currentStep === stepIndex;
+  };
+
+  const handleStepClick = (stepIndex: number) => {
+    // Only allow going to previous steps or the next step if current is complete
+    if (stepIndex < currentStep || (stepIndex === currentStep + 1 && canGoNext(currentStep))) {
+      setCurrentStep(stepIndex);
     }
   };
 
-  const handleBack = () => {
-    if (canGoBack()) {
-      setCurrentStep(currentStep - 1);
+  const handleNext = (stepIndex: number) => {
+    if (canGoNext(stepIndex) && stepIndex < steps.length - 1) {
+      setCurrentStep(stepIndex + 1);
     }
   };
 
@@ -73,36 +103,85 @@ const FormContent: React.FC = () => {
               </p>
             </div>
 
-            {/* Stepper */}
-            <FormStepper />
+            {/* Vertical Steps */}
+            <div className="space-y-4">
+              {steps.map((step, index) => (
+                <Card key={index} className="bg-background/60 backdrop-blur-sm shadow-medium border">
+                  <Collapsible open={isStepActive(index)} onOpenChange={() => handleStepClick(index)}>
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className={cn(
+                        "cursor-pointer transition-all duration-200 hover:bg-muted/50",
+                        isStepActive(index) && "bg-primary/5",
+                        isStepCompleted(index) && "bg-success/5"
+                      )}>
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
+                                isStepCompleted(index)
+                                  ? "bg-success border-success text-success-foreground"
+                                  : isStepActive(index)
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "border-muted bg-background text-muted-foreground"
+                              )}
+                            >
+                              {isStepCompleted(index) ? (
+                                <Check className="h-5 w-5" />
+                              ) : (
+                                <span className="text-lg">{step.icon}</span>
+                              )}
+                            </div>
+                            <div>
+                              <h3 className={cn(
+                                "font-semibold transition-colors",
+                                isStepActive(index) || isStepCompleted(index) ? "text-foreground" : "text-muted-foreground"
+                              )}>
+                                {step.title}
+                              </h3>
+                              <p className="text-sm text-muted-foreground">{step.description}</p>
+                            </div>
+                          </div>
+                          <ChevronDown className={cn(
+                            "h-5 w-5 transition-transform duration-200",
+                            isStepActive(index) ? "rotate-180" : ""
+                          )} />
+                        </CardTitle>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    
+                    <CollapsibleContent>
+                      <CardContent className="pt-0">
+                        <step.component />
+                        
+                        {/* Step Navigation */}
+                        <div className="flex justify-between mt-6 pt-4 border-t">
+                          <Button
+                            variant="outline"
+                            onClick={() => setCurrentStep(Math.max(0, index - 1))}
+                            disabled={index === 0}
+                            className="flex items-center gap-2"
+                          >
+                            <ChevronRight className="h-4 w-4 rotate-180" />
+                            Back
+                          </Button>
 
-            {/* Current Step Content */}
-            <div className="bg-background/60 backdrop-blur-sm rounded-lg p-6 shadow-large border">
-              <CurrentStepComponent />
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={!canGoBack()}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </Button>
-
-              {currentStep < steps.length - 1 && (
-                <Button
-                  onClick={handleNext}
-                  disabled={!canGoNext()}
-                  className="flex items-center gap-2 bg-gradient-primary hover:opacity-90 transition-opacity"
-                >
-                  Continue
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              )}
+                          {index < steps.length - 1 && (
+                            <Button
+                              onClick={() => handleNext(index)}
+                              disabled={!canGoNext(index)}
+                              className="flex items-center gap-2 bg-gradient-primary hover:opacity-90 transition-opacity"
+                            >
+                              Continue
+                              <ChevronRight className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </Card>
+              ))}
             </div>
           </div>
 
