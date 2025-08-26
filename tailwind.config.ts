@@ -61,6 +61,15 @@ export default {
 					DEFAULT: 'hsl(var(--warning))',
 					foreground: 'hsl(var(--warning-foreground))'
 				},
+				status: {
+					'not-started': 'hsl(var(--status-not-started))',
+					'in-progress': 'hsl(var(--status-in-progress))',
+					'awaiting-review': 'hsl(var(--status-awaiting-review))',
+					'in-review': 'hsl(var(--status-in-review))',
+					'completed': 'hsl(var(--status-completed))',
+					'delivered': 'hsl(var(--status-delivered))',
+					'redo': 'hsl(var(--status-redo))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

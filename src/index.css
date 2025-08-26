@@ -43,6 +43,15 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 98%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 98%;
+    
+    /* Status Colors */
+    --status-not-started: 240 4.8% 60%;
+    --status-in-progress: 217 91% 60%;
+    --status-awaiting-review: 48 96% 53%;
+    --status-in-review: 38 92% 50%;
+    --status-completed: 142 76% 36%;
+    --status-delivered: 264 83% 57%;
+    --status-redo: 0 84% 60%;
 
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(264 83% 57%), hsl(264 100% 70%));
