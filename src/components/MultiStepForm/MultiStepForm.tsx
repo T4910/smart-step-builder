@@ -5,7 +5,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { FormProvider, useFormContext } from './FormContext';
 import { PricingPreview } from './PricingPreview';
 import { ServiceSelection } from './steps/ServiceSelection';
-import { ServiceConfiguration } from './steps/ServiceConfiguration';
 import { AdditionalServices } from './steps/AdditionalServices';
 import { ProjectDetails } from './steps/ProjectDetails';
 import { ReviewSubmit } from './steps/ReviewSubmit';
@@ -17,28 +16,22 @@ const FormContent: React.FC = () => {
 
   const steps = [
     { 
-      component: ServiceSelection, 
-      title: 'Select Services',
-      description: 'Choose your content needs',
-      icon: '🎯'
+      component: ProjectDetails, 
+      title: 'Project Details',
+      description: 'Tell us about your project',
+      icon: '📋'
     },
     { 
-      component: ServiceConfiguration, 
-      title: 'Configure Services',
-      description: 'Customize your selections',
-      icon: '⚙️'
+      component: ServiceSelection, 
+      title: 'Select & Configure Services',
+      description: 'Choose and customize your content',
+      icon: '🎯'
     },
     { 
       component: AdditionalServices, 
       title: 'Add-ons & Upsells',
       description: 'Enhance your order',
       icon: '✨'
-    },
-    { 
-      component: ProjectDetails, 
-      title: 'Project Details',
-      description: 'Final information',
-      icon: '📋'
     },
     { 
       component: ReviewSubmit, 
@@ -51,15 +44,13 @@ const FormContent: React.FC = () => {
   const canGoNext = (stepIndex: number) => {
     switch (stepIndex) {
       case 0:
-        return formData.selectedServices.length > 0;
+        return formData.finalDetails.projectName.trim() !== '' && 
+               formData.finalDetails.description.trim() !== '';
       case 1:
-        return true; // Configuration is optional
+        return formData.selectedServices.length > 0;
       case 2:
         return true; // Add-ons are optional
       case 3:
-        return formData.finalDetails.projectName.trim() !== '' && 
-               formData.finalDetails.description.trim() !== '';
-      case 4:
         return false; // Final step
       default:
         return false;
