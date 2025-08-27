@@ -18,12 +18,12 @@ All colors MUST be HSL.
     --popover-foreground: 222.2 84% 4.9%;
 
     /* Brand Colors */
-    --primary: 264 83% 57%;
+    --primary: 0 100% 23%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 264 100% 70%;
+    --primary-glow: 0 100% 35%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 37 89% 55%;
+    --secondary-foreground: 0 0% 0%;
 
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
@@ -36,7 +36,7 @@ All colors MUST be HSL.
 
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 264 83% 57%;
+    --ring: 0 100% 23%;
 
     /* Success & Warning Colors */
     --success: 142 76% 36%;
@@ -54,7 +54,7 @@ All colors MUST be HSL.
     --status-redo: 0 84% 60%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(264 83% 57%), hsl(264 100% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(0 100% 23%), hsl(0 100% 35%));
     --gradient-background: linear-gradient(135deg, hsl(0 0% 100%), hsl(240 4.8% 95.9%));
     --gradient-card: linear-gradient(135deg, hsl(0 0% 100%), hsl(240 4.8% 98%));
 
@@ -62,7 +62,7 @@ All colors MUST be HSL.
     --shadow-soft: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
     --shadow-medium: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
     --shadow-large: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
-    --shadow-glow: 0 0 0 1px hsl(264 83% 57% / 0.05), 0 1px 2px 0 hsl(264 83% 57% / 0.1);
+    --shadow-glow: 0 0 0 1px hsl(0 100% 23% / 0.05), 0 1px 2px 0 hsl(0 100% 23% / 0.1);
 
     --radius: 0.5rem;
 
@@ -93,11 +93,11 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 0 100% 23%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 37 89% 55%;
+    --secondary-foreground: 0 0% 0%;
 
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
